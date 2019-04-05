@@ -1,2 +1,1 @@
-# Magnetometer Thesis
-
+# magnetometer_thesis
