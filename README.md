@@ -1,4 +1,4 @@
-#Evaluating the Efficacy of Magnetometer Based Parking Sensors 
+# Evaluating the Efficacy of Magnetometer Based Parking Sensors 
 
 
 #### Experiment 1: Evaluating the Stability of Current Market Magnetometer Chips
