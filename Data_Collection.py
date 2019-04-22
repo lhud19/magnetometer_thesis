@@ -19,14 +19,28 @@ from Tkinter import *
 import Tkinter as ttk
 from ttk import *
 from serial import *
-from time import sleep
+from time import *
 from threading import Thread
+import datetime
 import csv
 
 
-
-
-
+def collect_data(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1):
+    data_instance = data_holder(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1)
+    i = 1
+    sleep(2)
+    while i != 10:
+        sleep(0.15)
+        array = arduino.line.split()
+        sen_num = str(i)
+        if array[0][1] == sen_num:
+            print "sens " + sen_num + "got!"
+            data_instance.data.append(array[1])
+            data_instance.data.append(array[2])
+            data_instance.data.append(array[3])
+            i += 1
+    append_data("data_4_22.csv", data_instance.data)
+    return data_instance.data
 
 
 
@@ -42,7 +56,7 @@ class run_Aruino(Thread):
         # Below 32 everything in ASCII is gibberish
     def run(self):
         counter = 32
-        ser = Serial('/dev/tty.usbmodem143201', 9600)  # Establish the connection on a specific port
+        ser = Serial('/dev/tty.usbserial-14110', 9600)  # Establish the connection on a specific port
         while True:
                 counter += 1
                 ser.write(str(chr(counter)))  # Convert the decimal number to ASCII then send it to the Arduino
@@ -53,12 +67,9 @@ class run_Aruino(Thread):
                     counter = 32
 
 
-class collect(Thread):
+class data_holder:
     def __init__(self, arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1):
-        Thread.__init__(self)
-        self.daemon = True
         self.arduino = arduino
-        self.start()
         self.spot_1 = tkvar1
         self.spot_2 = tkvar2
         self.spot_3 = tkvar3
@@ -66,25 +77,10 @@ class collect(Thread):
         self.spot_5 = tkvar5
         self.spot_6 = tkvar6
         self.spot_num = e1
-
+        time = str(datetime.datetime.now())
         self.data = []
-        self.data = [self.spot_num.get(), self.spot_1.get(), self.spot_2.get(), self.spot_3.get(), self.spot_4.get(), self.spot_5.get(), self.spot_6.get()]
+        self.data = [time, self.spot_num.get(), self.spot_1.get(), self.spot_2.get(), self.spot_3.get(), self.spot_4.get(), self.spot_5.get(), self.spot_6.get()]
 
-
-    def run(self):
-        i = 1
-        sleep(2)
-        while i != 9:
-            sleep(0.15)
-            array = self.arduino.line.split()
-            sen_num = str(i)
-            if array[0][1] == sen_num:
-                print "sens " + sen_num + "got!"
-                self.data.append(array[1])
-                self.data.append(array[2])
-                self.data.append(array[3])
-                print self.data
-                i +=1
 
 
 
@@ -94,7 +90,6 @@ class collect(Thread):
 def main():
 
     #create_csv()
-
     root = Tk()
     root.title("Data Collection")
 
@@ -160,12 +155,23 @@ def main():
     e1 = Entry(topframe)
     e1.pack()
 
-    Button(topframe, text="Collect",
-                     command=collect(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1)).pack()  # 'fg - foreground' is used to color the contents
+
+    def callback():
+        data = collect_data(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1)
+        print data
 
 
-    #TODO where to place the collect command
-    collect(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1)
+    b = Button(topframe, text="Collect",
+                     command=callback)  # 'fg - foreground' is used to color the contents
+    b.pack()
+
+
+
+
+
+
+
+
 
     root.mainloop()
 
@@ -174,7 +180,7 @@ def main():
 
 #first creation of .csv file
 def create_csv():
-    csvRow = [["Spot Number, Spot Left Front, Spot Front, Spot Right Front, Spot Left, READING, Spot Right, Sen1x, Sen1y, Sen1z, Sen2x, Sen2y, Sen2z, Sen3x, Sen3y, Sen3z, Sen4x, Sen4y, Sen4z, Sen5x, Sen5y, Sen5z, Sen6x, Sen6y, Sen6z, Sen7x, Sen7y, Sen7z, Sen8x, Sen8y, Sen8z, Sen9x, Sen9y, Sen9z"]]
+    csvRow = [["Timestamp, Spot Number, Spot Left Front, Spot Front, Spot Right Front, Spot Left, READING, Spot Right, Sen1x, Sen1y, Sen1z, Sen2x, Sen2y, Sen2z, Sen3x, Sen3y, Sen3z, Sen4x, Sen4y, Sen4z, Sen5x, Sen5y, Sen5z, Sen6x, Sen6y, Sen6z, Sen7x, Sen7y, Sen7z, Sen8x, Sen8y, Sen8z, Sen9x, Sen9y, Sen9z"]]
     with open('data.csv', 'w') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerows(csvRow)
@@ -186,6 +192,7 @@ def append_data(csvFile, data):
     with open(csvFile, 'a') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(data)
+        print "Appended to .csv"
 
     csvFile.close()
 
