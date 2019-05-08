@@ -39,7 +39,7 @@ def collect_data(arduino, tkvar1, tkvar2, tkvar3, tkvar4, tkvar5, tkvar6, e1):
             data_instance.data.append(array[2])
             data_instance.data.append(array[3])
             i += 1
-    append_data("data_4_22.csv", data_instance.data)
+    append_data("data_5_8.csv", data_instance.data)
     return data_instance.data
 
 
@@ -56,7 +56,7 @@ class run_Aruino(Thread):
         # Below 32 everything in ASCII is gibberish
     def run(self):
         counter = 32
-        ser = Serial('/dev/tty.usbserial-14110', 9600)  # Establish the connection on a specific port
+        ser = Serial('/dev/tty.usbserial-14120', 9600)  # Establish the connection on a specific port
         while True:
                 counter += 1
                 ser.write(str(chr(counter)))  # Convert the decimal number to ASCII then send it to the Arduino
